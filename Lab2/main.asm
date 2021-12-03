@@ -86,12 +86,19 @@ call procFWrite
     mov bx, [reading]
     call procFReadLine
     mov si, inBuffer
+
+    cmp ax, 5 ;;Min line length
+    jl .readData ;;Empty line
+
     ..firstBlock:
         lodsb
         cmp al, 'Y'
         je ..finalize
 
-        cmp al, 0x3b
+        cmp al, 'Z'
+        je ..finalize
+
+        cmp al, 0x3b ; ';'
         jne ..firstBlock
 
     ..secondBlock:
@@ -155,7 +162,7 @@ call procFWrite
     ..print:
         mov bx, [writing]
         mov cx, [length]
-        inc cx
+        inc cx ;;Preserve new line
         mov dx, inBuffer
         call procFWrite
         jc errors.writeFile
@@ -237,7 +244,7 @@ mov si, charBuffer
 
 .while:
     mov cx, 1
-    mov dx, charBuffer
+    mov dx, charBuffer ; Optimizaion required (read max buffer)
     call procFRead
     jc errors.readingFile
     
